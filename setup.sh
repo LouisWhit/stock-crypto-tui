@@ -42,13 +42,13 @@ current_dir=$(pwd)
 echo "🔧 Setting up bash alias..."
 
 # Check if alias already exists
-if grep -q "alias stock-crypto-tui=" ~/.bashrc; then
+if grep -q "alias price=" ~/.bashrc; then
     echo "⚠️  Alias already exists in ~/.bashrc"
     read -p "Do you want to update it? (y/n): " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         # Remove existing alias
-        sed -i '/alias stock-crypto-tui=/d' ~/.bashrc
+        sed -i '/alias price=/d' ~/.bashrc
     else
         echo "Skipping alias setup"
         exit 0
@@ -56,7 +56,7 @@ if grep -q "alias stock-crypto-tui=" ~/.bashrc; then
 fi
 
 # Add new alias
-echo "alias stock-crypto-tui='python3 $current_dir/stock_crypto_tui.py'" >> ~/.bashrc
+echo "alias price='python3 $current_dir/stock_crypto_tui.py'" >> ~/.bashrc
 
 echo "✅ Alias added to ~/.bashrc"
 echo ""
@@ -64,8 +64,8 @@ echo "🎉 Setup complete!"
 echo ""
 echo "To use the tool:"
 echo "1. Reload your shell: source ~/.bashrc"
-echo "2. Run: stock-crypto-tui AAPL BTC ETH"
-echo "3. For watch mode: stock-crypto-tui --watch AAPL BTC ETH"
+echo "2. Run: price AAPL BTC ETH"
+echo "3. For watch mode: price --watch AAPL BTC ETH"
 echo ""
 echo "Configuration file: $current_dir/config.json"
 echo "You can customize colors, display options, and symbols in the config file."

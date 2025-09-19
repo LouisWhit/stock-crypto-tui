@@ -36,7 +36,7 @@ Any stock ticker supported by Yahoo Finance (e.g., AAPL, MSFT, GOOGL, TSLA)
 ### 1. Clone and Setup
 ```bash
 git clone <your-repo-url>
-cd stock-crypto-tui
+cd price
 ./setup.sh
 ```
 
@@ -48,13 +48,13 @@ source ~/.bashrc
 ### 3. Run the Tool
 ```bash
 # Single ticker
-stock-crypto-tui AAPL
+price AAPL
 
 # Multiple tickers
-stock-crypto-tui AAPL BTC ETH TSLA
+price AAPL BTC ETH TSLA
 
 # Watch mode (auto-refresh)
-stock-crypto-tui --watch AAPL BTC ETH
+price --watch AAPL BTC ETH
 ```
 
 ## Manual Installation
@@ -74,7 +74,7 @@ chmod +x stock_crypto_tui.py
 ### 3. Create Alias
 Add to your `~/.bashrc`:
 ```bash
-alias stock-crypto-tui='python3 /path/to/stock-crypto-tui/stock_crypto_tui.py'
+alias price='python3 /path/to/price/stock_crypto_tui.py'
 ```
 
 ### 4. Reload Shell
@@ -130,20 +130,20 @@ Edit `config.json` to customize the appearance:
 
 ```bash
 # Stock portfolio
-stock-crypto-tui AAPL MSFT GOOGL AMZN
+price AAPL MSFT GOOGL AMZN
 
 # Crypto portfolio  
-stock-crypto-tui BTC ETH ADA DOT
+price BTC ETH ADA DOT
 
 # Mixed portfolio
-stock-crypto-tui AAPL BTC ETH TSLA
+price AAPL BTC ETH TSLA
 
 # Watch mode with custom config
-stock-crypto-tui --config my_config.json --watch AAPL BTC
+price --config my_config.json --watch AAPL BTC
 
 # Different currency (e.g., EUR)
 # First update config.json: "default": "EUR", "symbol": "€"
-stock-crypto-tui AAPL BTC ETH
+price AAPL BTC ETH
 ```
 
 ## Data Sources
@@ -179,7 +179,7 @@ pip3 install -r requirements.txt
 
 **Colors not displaying**
 - Ensure your terminal supports colors
-- Try running with `TERM=xterm-256color stock-crypto-tui AAPL`
+- Try running with `TERM=xterm-256color price AAPL`
 
 ### Performance Tips
 

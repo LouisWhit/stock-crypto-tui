@@ -76,9 +76,23 @@ class StockCryptoTUI:
             hist = stock.history(period="1y")
             
             if hist.empty:
+                self.console.print(f"[yellow]No historical data available for {ticker}[/yellow]")
                 return None
                 
-            current_price = info.get('currentPrice', hist['Close'].iloc[-1])
+            # Get current price - try multiple sources
+            current_price = None
+            if 'currentPrice' in info and info['currentPrice'] is not None:
+                current_price = info['currentPrice']
+            elif 'regularMarketPrice' in info and info['regularMarketPrice'] is not None:
+                current_price = info['regularMarketPrice']
+            elif 'previousClose' in info and info['previousClose'] is not None:
+                current_price = info['previousClose']
+            else:
+                current_price = hist['Close'].iloc[-1]
+            
+            if current_price is None or current_price <= 0:
+                self.console.print(f"[yellow]Invalid price data for {ticker}[/yellow]")
+                return None
             
             # Calculate percentage changes
             changes = self.calculate_changes(hist, current_price)
@@ -114,7 +128,8 @@ class StockCryptoTUI:
                 'SHIB': 'shiba-inu',
                 'MATIC': 'matic-network',
                 'AVAX': 'avalanche-2',
-                'SOL': 'solana'
+                'SOL': 'solana',
+                'HBAR': 'hedera-hashgraph',
             }
             
             coin_id = crypto_mapping.get(ticker.upper(), ticker.lower())
@@ -208,7 +223,11 @@ class StockCryptoTUI:
         if not ytd_data.empty:
             changes['ytd'] = ((current_price - ytd_data['Close'].iloc[0]) / ytd_data['Close'].iloc[0]) * 100
         else:
-            changes['ytd'] = 0
+            # If no data for current year, use the first available data point
+            if not hist_data.empty:
+                changes['ytd'] = ((current_price - hist_data['Close'].iloc[0]) / hist_data['Close'].iloc[0]) * 100
+            else:
+                changes['ytd'] = 0
             
         return changes
     
@@ -237,15 +256,23 @@ class StockCryptoTUI:
         if hist_data.empty:
             return []
             
-        # Get last 3 months of data
-        three_months_ago = datetime.now() - timedelta(days=90)
-        recent_data = hist_data[hist_data.index >= three_months_ago]
-        
-        # Filter for Fridays (weekday 4)
-        friday_data = recent_data[recent_data.index.weekday == 4]
-        
-        # Return the last 12 Friday prices (approximately 3 months)
-        return friday_data['Close'].tail(12).tolist()
+        try:
+            # Get last 3 months of data
+            three_months_ago = datetime.now() - timedelta(days=90)
+            recent_data = hist_data[hist_data.index >= three_months_ago]
+            
+            # Filter for Fridays (weekday 4)
+            friday_data = recent_data[recent_data.index.weekday == 4]
+            
+            # Return the last 12 Friday prices (approximately 3 months)
+            if not friday_data.empty:
+                return friday_data['Close'].tail(12).tolist()
+            else:
+                # If no Fridays found, return recent data points
+                return recent_data['Close'].tail(12).tolist()
+        except Exception:
+            # Fallback: return recent data points
+            return hist_data['Close'].tail(12).tolist()
     
     def get_crypto_friday_data(self, price_data: List) -> List[float]:
         """Get Friday prices for crypto (approximate)"""
@@ -348,8 +375,19 @@ class StockCryptoTUI:
                                       self.config['display']['chart_width'],
                                       self.config['display']['chart_height'])
         
-        # Combine all elements
-        content = f"{ticker_text}\n{price_text}\n\n{changes_table}\n\n{chart}"
+        # Create a simple text-based content
+        content = f"{ticker_text}\n{price_text}\n\n"
+        
+        # Add table as rendered text
+        from io import StringIO
+        import sys
+        old_stdout = sys.stdout
+        sys.stdout = buffer = StringIO()
+        self.console.print(changes_table)
+        sys.stdout = old_stdout
+        table_text = buffer.getvalue()
+        
+        content += table_text + "\n" + chart
         
         return Panel(
             content,
